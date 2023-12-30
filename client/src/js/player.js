@@ -6,7 +6,7 @@ class Player {
         this.gravity = gravity;
         this.speed = 10
         this.position = {
-            x: 100,
+            x: 487,
             y: 100
         }
         this.velocity = {

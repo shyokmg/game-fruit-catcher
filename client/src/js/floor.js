@@ -4,7 +4,7 @@ class Floor {
         this.c = c;
         this.position = {
             x: 0,
-            y: 964
+            y: 516
         };
         this.width = 1024;
         this.height = 60;
