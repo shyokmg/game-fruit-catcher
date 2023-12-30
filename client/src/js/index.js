@@ -13,6 +13,17 @@ canvas.height = 576;
 let player = new Player(canvas, c, gravity)
 let floor = new Floor(canvas, c);
 
+let lastKey
+
+const keys = {
+  right: {
+    pressed: false
+  },
+  left: {
+    pressed: false
+  }
+}
+
 function init() {
     player = new Player(canvas, c, gravity);
     floor = new Floor(canvas, c);
@@ -25,6 +36,17 @@ function animate() {
 
     floor.draw();
     player.update();
+    console.log(player.position.x)
+  // If right or left keys are pressed move right or left in 5px
+  if (keys.right.pressed && player.position.x < 977) {
+    player.velocity.x = player.speed;
+    
+  } else if (keys.left.pressed && player.position.x > 0) {
+    player.velocity.x = -player.speed;
+  } else {
+    player.velocity.x = 0;
+  }
+
 
     if(boxCollision(player, floor)) {
         player.velocity.y = 0;
@@ -43,3 +65,45 @@ function boxCollision(obj1, obj2) {
 
 init();
 animate();
+
+// Event listener for pressing down on a key 
+addEventListener('keydown', ({ keyCode }) => {
+    switch (keyCode) {
+      // left key: A
+      case 65:
+        keys.left.pressed = true;
+        lastKey = 'left'
+        break;
+      // down key: S
+      case 83:
+        break;
+      // right key: D
+      case 68:
+        keys.right.pressed = true;
+        lastKey = 'right'
+  
+        break;
+      // up key: W
+      case 87:
+        break;
+    }
+  });
+  
+  // Event listener for releasing off of a key 
+  addEventListener('keyup', ({ keyCode }) => {
+    switch (keyCode) {
+      // left key: A
+      case 65:
+        keys.left.pressed = false;
+      // down key: S
+      case 83:
+        break;
+      // right key: D
+      case 68:
+        keys.right.pressed = false;
+        break;
+      // up key: W
+      case 87:
+        break;
+    }
+  });
