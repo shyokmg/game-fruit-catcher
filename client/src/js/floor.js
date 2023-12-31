@@ -1,5 +1,7 @@
-class Floor {
-    constructor(canvas, c) {
+import {canvas, c} from './index'
+
+export default class Floor {
+    constructor() {
         this.canvas = canvas;
         this.c = c;
         this.position = {
@@ -20,5 +22,3 @@ class Floor {
         );
     }
 }
-
-module.exports = Floor;

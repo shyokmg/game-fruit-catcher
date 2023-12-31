@@ -1,6 +1,8 @@
+import { canvas, c, gravity } from "./index";
 
-class Player {
-    constructor(canvas , c, gravity){
+
+export default class Player {
+    constructor(){
         this.canvas = canvas;
         this.c = c;
         this.gravity = gravity;
@@ -38,5 +40,3 @@ class Player {
         }
     }
 }
-
-module.exports = Player
