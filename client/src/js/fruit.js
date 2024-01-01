@@ -28,9 +28,5 @@ export default class Fruit {
     this.draw();
     this.position.y += this.velocity.y;
     this.position.x += this.velocity.x;
-
-    // if (this.position.y + this.height >= this.canvas.height) {
-    //   this.velocity.y = 0; // Stop the fruit from falling further when it reaches the ground
-    // }
   }
 }

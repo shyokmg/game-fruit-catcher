@@ -2,11 +2,12 @@ import '../css/style.css';
 import Player from './player';
 import Floor from './floor';
 import Fruit from './fruit';
+import Button from './button';
 
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 const gravity = 0.5;
-const button = document.querySelector('button');
+// const button = document.querySelector('button');
 
 canvas.width = 1024;
 canvas.height = 576;
@@ -17,8 +18,12 @@ let floor = new Floor();
 let hearts = 10;
 let score = 0;
 let fruitCounter;
-let lastKey
 let fruits = []
+let buttons = []
+let startGame;
+let restartGame;
+let lastKey;
+let animationId;
 
 const keys = {
   right: {
@@ -29,8 +34,30 @@ const keys = {
   }
 }
 
+const buttonState = {
+  pressed: false
+}
+
+startGame = new Button('Start Game', 'yellow', 'black');
+startGame.setPosition(canvas.width/2 - 100, 250);
+startGame.setSize(200, 75);
+buttons.push(startGame);
+
+restartGame = new Button('Play again', 'yellow', 'black');
+restartGame.setPosition(canvas.width/2 - 100, 250);
+restartGame.setSize(200, 75);
+buttons.push(restartGame);
+
 function init() {
   // initialize
+  setBackground();
+  buttonState.pressed = false;
+  startGame.draw();
+}
+
+init();
+
+function startState() {
   player = new Player();
   floor = new Floor();
   hearts = 10;
@@ -40,21 +67,24 @@ function init() {
   spawnFruit(fruitCounter);
 }
 
+function endState() {
+  buttonState.pressed = false;
+  restartGame.draw();
+}
 
 function update() {
-  requestAnimationFrame(update)
-  c.fillStyle = 'white'
-  c.fillRect(0, 0, canvas.width, canvas.height);
-
+  animationId = requestAnimationFrame(update)
+  setBackground();
+  buttonState.pressed = true;
   // Score counter
   c.fillStyle = 'black'
   c.font = "30px sans-serif";
-  c.fillText(`Score: ${score}`, 10, 31);
+  c.fillText(`Score: ${score}`, 70, 31);
 
   // Heart counter
   c.fillStyle = 'black'
   c.font = "30px sans-serif";
-  c.fillText(`Hearts: ${hearts}`, 800, 31);
+  c.fillText(`Hearts: ${hearts}`, 870, 31);
 
   floor.draw();
   player.update();
@@ -62,7 +92,6 @@ function update() {
   fruits.forEach((fruit, i) => {
     fruit.update();
     if (boxCollision(fruit, floor)) {
-      // fruit.velocity.y = 0;
       fruits.splice(i, 1);
       --fruitCounter;
       --hearts;
@@ -77,27 +106,29 @@ function update() {
   if (hearts <= 0 || fruitCounter <= 0) {
     c.fillStyle = 'black'
     c.font = "50px sans-serif";
-    c.fillText(`Game Over Your Score is: ${score}`, 220, 220);
+    c.fillText(`Game Over Your Score is: ${score}`, 512, 220);
     fruits = [];
-    button.style.display = 'block';
+    endState();
   }
 
   // If right or left keys are pressed move right or left in 5px
   if (keys.right.pressed && player.position.x < 977) {
     player.velocity.x = player.speed;
-
   } else if (keys.left.pressed && player.position.x > 0) {
     player.velocity.x = -player.speed;
   } else {
     player.velocity.x = 0;
   }
-
   if (boxCollision(player, floor)) {
     player.velocity.y = 0;
   }
 }
 
-update();
+function setBackground() {
+  c.fillStyle = 'white'
+  c.fillRect(0, 0, canvas.width, canvas.height);
+  c.textAlign = 'center';
+}
 
 // Spawn fruit
 function spawnFruit(fruitCount) {
@@ -135,7 +166,6 @@ addEventListener('keydown', ({ keyCode }) => {
     case 68:
       keys.right.pressed = true;
       lastKey = 'right'
-
       break;
     // up key: W
     case 87:
@@ -162,9 +192,18 @@ addEventListener('keyup', ({ keyCode }) => {
   }
 });
 
-button.addEventListener('click', (event) => {
-  button.style.display = 'none';
-  init();
-  // spawnFruit(30);
-})
+canvas.addEventListener('click', (event) => {
 
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  buttons.forEach(button => {
+    if (button.inBounds(x, y) && !buttonState.pressed){
+      console.log('Click');
+      cancelAnimationFrame(animationId);
+      startState();
+      update();
+    }
+  });
+});
