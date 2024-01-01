@@ -6,7 +6,7 @@ export default class Player {
         this.canvas = canvas;
         this.c = c;
         this.gravity = gravity;
-        this.speed = 10
+        this.speed = 15
         this.position = {
             x: 487,
             y: 100

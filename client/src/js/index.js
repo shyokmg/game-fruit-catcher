@@ -3,12 +3,11 @@ import Player from './player';
 import Floor from './floor';
 import Fruit from './fruit';
 import Button from './button';
-import {fruitType} from './fruitType';
+import { fruitType } from './fruitType';
 
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 const gravity = 0.5;
-// const button = document.querySelector('button');
 
 canvas.width = 1024;
 canvas.height = 576;
@@ -23,8 +22,10 @@ let fruits = []
 let buttons = []
 let startGame;
 let restartGame;
+let nextLevel;
 let lastKey;
 let animationId;
+let level = 1;
 
 const keys = {
   right: {
@@ -40,24 +41,32 @@ const buttonState = {
 }
 
 startGame = new Button('Start Game', 'yellow', 'black');
-startGame.setPosition(canvas.width/2 - 100, 250);
+startGame.setPosition(canvas.width / 2 - 100, 250);
 startGame.setSize(200, 75);
 buttons.push(startGame);
 
+nextLevel = new Button('Next Level', 'yellow', 'black');
+nextLevel.setPosition(canvas.width / 2 - 100, 250);
+nextLevel.setSize(200, 75);
+buttons.push(nextLevel);
+
 restartGame = new Button('Play again', 'yellow', 'black');
-restartGame.setPosition(canvas.width/2 - 100, 250);
+restartGame.setPosition(canvas.width / 2 - 100, 250);
 restartGame.setSize(200, 75);
 buttons.push(restartGame);
 
 function init() {
   // initialize
   setBackground();
+  
   buttonState.pressed = false;
   startGame.draw();
-  console.log('heollow');
-  // console.log(fruitType.length);
-// let fruitLists = getRandomFruits(30);
-// console.log(fruitLists);
+  score = 0;
+
+   // Level counter
+   c.fillStyle = 'black'
+   c.font = "30px sans-serif";
+   c.fillText(`Level: ${level}`, 514, 31);
 }
 
 init();
@@ -66,20 +75,58 @@ function startState() {
   player = new Player();
   floor = new Floor();
   hearts = 10;
-  score = 0;
-  fruits = getRandomFruits(30)
+  if (level === 1)  {
+    score = 0;
+  }
+  
+  // fruits = getRandomFruits(30)
+  isLevel(level);
   fruitCounter = fruits.length;
   // spawnFruit(fruitCounter);
+  // buttonState.pressed = false;
 }
 
-function endState() {
-  buttonState.pressed = false;
-  restartGame.draw();
+function endState(state) {
+  console.log(state);
+  if (state){
+    if (level < 5) {
+      ++level
+      buttonState.pressed = false;
+      nextLevel.draw();
+      cancelAnimationFrame(animationId)
+    } else {
+      c.fillStyle = 'black'
+    c.font = "50px sans-serif";
+    c.fillText(`Game Over Your Score is: ${score}`, 512, 220);
+    fruits = [];
+    level = 1;
+    buttonState.pressed = false;
+    restartGame.draw();
+    cancelAnimationFrame(animationId)
+    }
+  } else {
+    c.fillStyle = 'black'
+    c.font = "50px sans-serif";
+    c.fillText(`Game Over Your Score is: ${score}`, 512, 220);
+    fruits = [];
+    level = 1;
+    buttonState.pressed = false;
+    restartGame.draw();
+    cancelAnimationFrame(animationId)
+  }
+  
+
 }
 
 function update() {
   animationId = requestAnimationFrame(update)
   setBackground();
+  console.log(fruitCounter);
+     // Level counter
+     c.fillStyle = 'black'
+     c.font = "30px sans-serif";
+     c.fillText(`Level: ${level}`, 514, 31);
+
   buttonState.pressed = true;
   // Score counter
   c.fillStyle = 'black'
@@ -109,12 +156,11 @@ function update() {
     }
   });
 
-  if (hearts <= 0 || fruitCounter <= 0) {
-    c.fillStyle = 'black'
-    c.font = "50px sans-serif";
-    c.fillText(`Game Over Your Score is: ${score}`, 512, 220);
-    fruits = [];
-    endState();
+  if (hearts <= 0) {
+    hearts = 0;
+    endState(false);
+  } else if(fruitCounter <= 0) {
+    endState(true);
   }
 
   // If right or left keys are pressed move right or left in 5px
@@ -136,18 +182,7 @@ function setBackground() {
   c.textAlign = 'center';
 }
 
-// Spawn fruit
-// function spawnFruit(fruitCount) {
-//   for (let i = 1; i < fruitCount + 1; i++) {
-//     const yOffset = i * (-500);
-//     let xPosition = Math.floor(Math.random() * 1000);
-//     fruits.push(
-//       new Fruit({ position: { x: xPosition, y: yOffset } })
-//     )
-//   }
-// }
-
-function getRandomFruits(num) {
+function getRandomFruits(num, addSpeed, addPoints, addDamage) {
   let fruitList = []
   let randomFruits = []
   fruitType.forEach(fruit => {
@@ -164,21 +199,22 @@ function getRandomFruits(num) {
   }
 
   fruitList.forEach((fruit, i) => {
-    const yOffset = i * (-500);
+    const yOffset = i * (-300);
     let xPosition = Math.floor(Math.random() * 1000);
     randomFruits.push(
       new Fruit(
-        fruit.color, 
-        fruit.size.width, 
-        fruit.size.height, 
-        fruit.speed, 
-        fruit.points,
-        fruit.damage, 
-        {position: {
-          x: xPosition, 
-          y: yOffset
-        }
-      })
+        fruit.color,
+        fruit.size.width,
+        fruit.size.height,
+        fruit.speed + addSpeed,
+        fruit.points * addPoints,
+        fruit.damage * addDamage,
+        {
+          position: {
+            x: xPosition,
+            y: yOffset
+          }
+        })
     )
   })
   return randomFruits;
@@ -194,6 +230,32 @@ function boxCollision(obj1, obj2) {
     obj1.position.x <= obj2.position.x + obj2.width) {
     return true;
   }
+}
+
+function isLevel(level) {
+  switch (level) {
+    // level 1
+    case 1:
+      fruits = getRandomFruits(15, 0, 1, 1)
+      break;
+    // level 2
+    case 2:
+      fruits = getRandomFruits(20, 2, 2, 1)
+      break;
+    // level 3
+    case 3:
+      fruits = getRandomFruits(25, 3, 3, 2)
+      break;
+    // level 4
+    case 4:
+      fruits = getRandomFruits(30, 4, 4, 2.5)
+      break;
+    // level 5
+    case 5:
+      fruits = getRandomFruits(35, 5, 5, 3)
+      break;
+  }
+
 }
 
 // Event listener for pressing down on a key 
@@ -244,7 +306,7 @@ canvas.addEventListener('click', (event) => {
   const y = event.clientY - rect.top;
 
   buttons.forEach(button => {
-    if (button.inBounds(x, y) && !buttonState.pressed){
+    if (button.inBounds(x, y) && !buttonState.pressed) {
       console.log('Click');
       cancelAnimationFrame(animationId);
       startState();
@@ -252,3 +314,4 @@ canvas.addEventListener('click', (event) => {
     }
   });
 });
+
