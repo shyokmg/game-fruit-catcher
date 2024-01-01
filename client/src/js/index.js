@@ -3,6 +3,7 @@ import Player from './player';
 import Floor from './floor';
 import Fruit from './fruit';
 import Button from './button';
+import {fruitType} from './fruitType';
 
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
@@ -53,6 +54,10 @@ function init() {
   setBackground();
   buttonState.pressed = false;
   startGame.draw();
+  console.log('heollow');
+  // console.log(fruitType.length);
+// let fruitLists = getRandomFruits(30);
+// console.log(fruitLists);
 }
 
 init();
@@ -62,9 +67,9 @@ function startState() {
   floor = new Floor();
   hearts = 10;
   score = 0;
-  fruits = [];
-  fruitCounter = 30
-  spawnFruit(fruitCounter);
+  fruits = getRandomFruits(30)
+  fruitCounter = fruits.length;
+  // spawnFruit(fruitCounter);
 }
 
 function endState() {
@@ -94,12 +99,13 @@ function update() {
     if (boxCollision(fruit, floor)) {
       fruits.splice(i, 1);
       --fruitCounter;
-      --hearts;
+      // --hearts;
     }
     if (boxCollision(fruit, player)) {
       fruits.splice(i, 1);
       --fruitCounter;
-      ++score;
+      score += fruit.points;
+      hearts -= fruit.damage;
     }
   });
 
@@ -131,15 +137,54 @@ function setBackground() {
 }
 
 // Spawn fruit
-function spawnFruit(fruitCount) {
-  for (let i = 1; i < fruitCount + 1; i++) {
+// function spawnFruit(fruitCount) {
+//   for (let i = 1; i < fruitCount + 1; i++) {
+//     const yOffset = i * (-500);
+//     let xPosition = Math.floor(Math.random() * 1000);
+//     fruits.push(
+//       new Fruit({ position: { x: xPosition, y: yOffset } })
+//     )
+//   }
+// }
+
+function getRandomFruits(num) {
+  let fruitList = []
+  let randomFruits = []
+  fruitType.forEach(fruit => {
+    let count = Math.round(num * fruit.probability)
+    for (let i = 0; i < count; i++) {
+      fruitList.push(fruit);
+    }
+  });
+
+  // Shuffle the fruits
+  for (let i = fruitList.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [fruitList[i], fruitList[j]] = [fruitList[j], fruitList[i]];
+  }
+
+  fruitList.forEach((fruit, i) => {
     const yOffset = i * (-500);
     let xPosition = Math.floor(Math.random() * 1000);
-    fruits.push(
-      new Fruit({ position: { x: xPosition, y: yOffset } })
+    randomFruits.push(
+      new Fruit(
+        fruit.color, 
+        fruit.size.width, 
+        fruit.size.height, 
+        fruit.speed, 
+        fruit.points,
+        fruit.damage, 
+        {position: {
+          x: xPosition, 
+          y: yOffset
+        }
+      })
     )
-  }
+  })
+  return randomFruits;
 }
+
+// Usage
 
 // collision detection
 function boxCollision(obj1, obj2) {
