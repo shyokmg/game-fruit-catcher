@@ -14,8 +14,8 @@ export { canvas, c, gravity };
 
 let player = new Player()
 let floor = new Floor();
-let hearts;
-let score;
+let hearts = 10;
+let score = 0;
 let fruitCounter;
 let lastKey
 let fruits = []
@@ -46,8 +46,17 @@ function update() {
   c.fillStyle = 'white'
   c.fillRect(0, 0, canvas.width, canvas.height);
 
+  // Score counter
+  c.fillStyle = 'black'
+  c.font = "30px sans-serif";
+  c.fillText(`Score: ${score}`, 10, 31);
+
+  // Heart counter
+  c.fillStyle = 'black'
+  c.font = "30px sans-serif";
+  c.fillText(`Hearts: ${hearts}`, 800, 31);
+
   floor.draw();
-  // console.log(hearts);
   player.update();
 
   fruits.forEach((fruit, i) => {
@@ -65,20 +74,13 @@ function update() {
     }
   });
 
-  console.log(score);
-
-  if (hearts <= 0) {
-    console.log(`Game over, your score is ${score}`);
-    // init();
+  if (hearts <= 0 || fruitCounter <= 0) {
+    c.fillStyle = 'black'
+    c.font = "50px sans-serif";
+    c.fillText(`Game Over Your Score is: ${score}`, 220, 220);
     fruits = [];
     button.style.display = 'block';
-  } else if (fruitCounter <= 0) {
-    console.log(`Game over, your score is ${score}`)
-    // init();
-    button.style.display = 'block';
   }
-
-  
 
   // If right or left keys are pressed move right or left in 5px
   if (keys.right.pressed && player.position.x < 977) {
@@ -90,7 +92,6 @@ function update() {
     player.velocity.x = 0;
   }
 
-
   if (boxCollision(player, floor)) {
     player.velocity.y = 0;
   }
@@ -98,6 +99,7 @@ function update() {
 
 update();
 
+// Spawn fruit
 function spawnFruit(fruitCount) {
   for (let i = 1; i < fruitCount + 1; i++) {
     const yOffset = i * (-500);
@@ -107,9 +109,6 @@ function spawnFruit(fruitCount) {
     )
   }
 }
-
-// spawnFruit(30);
-
 
 // collision detection
 function boxCollision(obj1, obj2) {
