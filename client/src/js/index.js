@@ -3,6 +3,7 @@ import Player from './player';
 import Floor from './floor';
 import Fruit from './fruit';
 import Button from './button';
+import Text from './text';
 import { fruitType } from './fruitType';
 
 const canvas = document.querySelector('canvas');
@@ -13,20 +14,26 @@ canvas.width = 1024;
 canvas.height = 576;
 export { canvas, c, gravity };
 
+let score = 0;
+let hearts = 10;
+let level = 1;
 let player = new Player()
 let floor = new Floor();
-let hearts = 10;
-let score = 0;
+let scoreText;
+let levelText;
+let healthText;
+let gameOverText;
 let fruitCounter;
 let fruits = []
 let buttons = []
 let startGame;
 let restartGame;
 let nextLevel;
+let nextLevelState;
 let lastKey;
 let animationId;
-let level = 1;
 
+// check movement state
 const keys = {
   right: {
     pressed: false
@@ -36,10 +43,12 @@ const keys = {
   }
 }
 
+// check button ui state
 const buttonState = {
   pressed: false
 }
 
+// initialize button ui
 startGame = new Button('Start Game', 'yellow', 'black');
 startGame.setPosition(canvas.width / 2 - 100, 250);
 startGame.setSize(200, 75);
@@ -55,116 +64,95 @@ restartGame.setPosition(canvas.width / 2 - 100, 250);
 restartGame.setSize(200, 75);
 buttons.push(restartGame);
 
+// initialize game
 function init() {
-  // initialize
   setBackground();
-  
   buttonState.pressed = false;
   startGame.draw();
   score = 0;
-
-   // Level counter
-   c.fillStyle = 'black'
-   c.font = "30px sans-serif";
-   c.fillText(`Level: ${level}`, 514, 31);
 }
 
 init();
 
+// start state when button is pressed
 function startState() {
   player = new Player();
   floor = new Floor();
+  fruits = [];
   hearts = 10;
-  if (level === 1)  {
-    score = 0;
-  }
-  
-  // fruits = getRandomFruits(30)
+  if (level === 1) score = 0;
   isLevel(level);
   fruitCounter = fruits.length;
-  // spawnFruit(fruitCounter);
-  // buttonState.pressed = false;
 }
 
-function endState(state) {
-  console.log(state);
-  if (state){
-    if (level < 5) {
-      ++level
-      buttonState.pressed = false;
-      nextLevel.draw();
-      cancelAnimationFrame(animationId)
-    } else {
-      c.fillStyle = 'black'
-    c.font = "50px sans-serif";
-    c.fillText(`Game Over Your Score is: ${score}`, 512, 220);
-    fruits = [];
-    level = 1;
-    buttonState.pressed = false;
-    restartGame.draw();
-    cancelAnimationFrame(animationId)
-    }
-  } else {
-    c.fillStyle = 'black'
-    c.font = "50px sans-serif";
-    c.fillText(`Game Over Your Score is: ${score}`, 512, 220);
-    fruits = [];
-    level = 1;
-    buttonState.pressed = false;
-    restartGame.draw();
-    cancelAnimationFrame(animationId)
-  }
-  
-
-}
-
+// update function to animate canvas
 function update() {
   animationId = requestAnimationFrame(update)
   setBackground();
-  console.log(fruitCounter);
-     // Level counter
-     c.fillStyle = 'black'
-     c.font = "30px sans-serif";
-     c.fillText(`Level: ${level}`, 514, 31);
-
   buttonState.pressed = true;
-  // Score counter
-  c.fillStyle = 'black'
-  c.font = "30px sans-serif";
-  c.fillText(`Score: ${score}`, 70, 31);
 
-  // Heart counter
-  c.fillStyle = 'black'
-  c.font = "30px sans-serif";
-  c.fillText(`Hearts: ${hearts}`, 870, 31);
-
+  // Set up game meters
+  scoreText = new Text(`Score: ${score}`, 'black', 30, 'left', 30, 31);
+  levelText = new Text(`Level: ${level}`, 'black', 30, 'center', canvas.width / 2, 31);
+  healthText = new Text(`Hearts: ${hearts}`, 'black', 30, 'right', canvas.width - 30, 31);
+  gameOverText = new Text(`Game Over Your Score is: ${score}`, 'black', 50, 'center', canvas.width / 2, 220);
+  
+  // Draw meters
+  scoreText.draw();
+  levelText.draw();
+  healthText.draw();
+  
+  // Draw the floor and the player
   floor.draw();
   player.update();
 
+  // loop through fruit list and check for collisions
   fruits.forEach((fruit, i) => {
     fruit.update();
     if (boxCollision(fruit, floor)) {
       fruits.splice(i, 1);
       --fruitCounter;
-      // --hearts;
     }
     if (boxCollision(fruit, player)) {
+      player.color = 'red'
+      setTimeout(() => {
+        player.color = 'purple'
+      }, 250);
+
       fruits.splice(i, 1);
-      --fruitCounter;
       score += fruit.points;
       hearts -= fruit.damage;
+      --fruitCounter;
     }
   });
 
+  // Game conditions when game is over, or proceeds to next level
+  
+  // check if out of hearts restarts the game
   if (hearts <= 0) {
-    hearts = 0;
-    endState(false);
-  } else if(fruitCounter <= 0) {
-    endState(true);
+    buttonState.pressed = false;
+    nextLevelState = false;
+    fruits = [];
+    gameOverText.draw();
+    restartGame.draw();
+
+  // check if pass procced to next level
+  } else if (fruitCounter <= 0 && level < 5) {
+    // endState(true);
+    buttonState.pressed = false;
+    nextLevelState = true;
+    nextLevel.draw();
+
+// check if current level is 5 and restarts the game
+  } else if (fruitCounter <= 0 && level >= 5) {
+    buttonState.pressed = false;
+    nextLevelState = false;
+    gameOverText.draw();
+    restartGame.draw();
   }
 
-  // If right or left keys are pressed move right or left in 5px
-  if (keys.right.pressed && player.position.x < 977) {
+  // condition for basic player movement
+  if (keys.right.pressed && player.position.x < canvas.width - player.width) {
     player.velocity.x = player.speed;
   } else if (keys.left.pressed && player.position.x > 0) {
     player.velocity.x = -player.speed;
@@ -176,12 +164,14 @@ function update() {
   }
 }
 
+// Default background
 function setBackground() {
   c.fillStyle = 'white'
   c.fillRect(0, 0, canvas.width, canvas.height);
   c.textAlign = 'center';
 }
 
+// Logic to spawn fruits
 function getRandomFruits(num, addSpeed, addPoints, addDamage) {
   let fruitList = []
   let randomFruits = []
@@ -198,6 +188,7 @@ function getRandomFruits(num, addSpeed, addPoints, addDamage) {
     [fruitList[i], fruitList[j]] = [fruitList[j], fruitList[i]];
   }
 
+  // Add fruit properties based on level
   fruitList.forEach((fruit, i) => {
     const yOffset = i * (-300);
     let xPosition = Math.floor(Math.random() * 1000);
@@ -220,18 +211,22 @@ function getRandomFruits(num, addSpeed, addPoints, addDamage) {
   return randomFruits;
 }
 
-// Usage
-
 // collision detection
 function boxCollision(obj1, obj2) {
-  if (obj1.position.y + obj1.height <= obj2.position.y &&
-    obj1.position.y + obj1.height + obj1.velocity.y >= obj2.position.y &&
-    obj1.position.x + obj1.width >= obj2.position.x &&
-    obj1.position.x <= obj2.position.x + obj2.width) {
+  let obj1Right = obj1.position.x + obj1.width;
+  let obj1Bottom = obj1.position.y + obj1.height;
+  let obj2Right = obj2.position.x + obj2.width;
+  let obj2Bottom = obj2.position.y + obj2.height;
+
+  if (obj1.position.x < obj2Right &&
+    obj1Right > obj2.position.x &&
+    obj1.position.y < obj2Bottom &&
+    obj1Bottom > obj2.position.y) {
     return true;
-  }
+  } return false;
 }
 
+// create fruits based on level
 function isLevel(level) {
   switch (level) {
     // level 1
@@ -299,16 +294,21 @@ addEventListener('keyup', ({ keyCode }) => {
   }
 });
 
+// Button click event
 canvas.addEventListener('click', (event) => {
-
   const rect = canvas.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
 
+  // loop through button list and check level state
   buttons.forEach(button => {
     if (button.inBounds(x, y) && !buttonState.pressed) {
-      console.log('Click');
       cancelAnimationFrame(animationId);
+      if (nextLevelState) {
+        ++level
+      } else {
+        level = 1
+      }
       startState();
       update();
     }

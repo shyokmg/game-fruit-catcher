@@ -6,7 +6,7 @@ export default class Player {
         this.canvas = canvas;
         this.c = c;
         this.gravity = gravity;
-        this.speed = 15
+        this.speed = 12
         this.position = {
             x: 487,
             y: 100
@@ -17,11 +17,12 @@ export default class Player {
         }
         this.width = 50;
         this.height = 50;
+        this.color = 'purple';
     }
 
     draw() {
         
-        this.c.fillStyle = 'red';
+        this.c.fillStyle = this.color;
         this.c.fillRect(
             this.position.x,
             this.position.y,
