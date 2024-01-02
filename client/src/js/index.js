@@ -67,8 +67,10 @@ buttons.push(restartGame);
 // initialize game
 function init() {
   setBackground();
+  let gameTitle = new Text('FRUIT CATCHER', 'black', 50, 'center', canvas.width/2, canvas.height/3);
   buttonState.pressed = false;
   startGame.draw();
+  gameTitle.draw();
   score = 0;
 }
 
