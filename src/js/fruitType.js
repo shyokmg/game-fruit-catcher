@@ -1,7 +1,9 @@
+import cherries from '../images/cherries.png';
+
 export const fruitType = [
     {
       name: 'cherry',
-      color: 'red',
+      color: 'rgba(0, 0, 255, 0.5)',
       size: {
         width: 20,
         height: 20
@@ -9,7 +11,8 @@ export const fruitType = [
       speed: 3,
       points: 1,
       probability: 0.3,
-      damage: 0
+      damage: 0,
+      image: cherries
     },
     {
       name: 'apple',
@@ -21,7 +24,8 @@ export const fruitType = [
       speed: 4,
       points: 2,
       probability: 0.1,
-      damage: 0
+      damage: 0,
+      image: cherries
     },
     {
       name: 'orange',
@@ -33,7 +37,8 @@ export const fruitType = [
       speed: 4,
       points: 3,
       probability: 0.20,
-      damage: 0
+      damage: 0,
+      image: cherries
     },
     {
       name: 'pinapple',
@@ -45,7 +50,8 @@ export const fruitType = [
       speed: 5,
       points: 5,
       probability: 0.15,
-      damage: 0
+      damage: 0,
+      image: cherries
     },
     {
       name: 'bomb',
@@ -57,6 +63,7 @@ export const fruitType = [
       speed: 3,
       points: 0,
       probability: 0.2,
-      damage: 4
+      damage: 4,
+      image: cherries
     }
   ];
